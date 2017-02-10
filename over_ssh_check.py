@@ -2,9 +2,12 @@
 
 # -*- coding: utf-8 -*-
 '''
-Execute script via ssh with password.
+Perform nagios check over ssh with password.
 
-Author: Jiri Kotlin
+.. code-block:: bash
+over_ssh_check.py -H example.com -l userslogin -p passw0rd -c '/home/userlogin/check_disk -w 15% -c 10% -W 15% -K 10% -p /dev/sda1'
+
+:codeauthor: Jiri Kotlin <jirka@poslouchej.net>
 
 '''
 import sys
