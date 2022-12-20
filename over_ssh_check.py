@@ -9,6 +9,9 @@ over_ssh_check.py -H example.com -l userslogin -p passw0rd -c '/home/userlogin/c
 
 :codeauthor: Jiri Kotlin <jirka@poslouchej.net>
 
+modifed by Dave Holland <dave@biff.org.uk> to optionally check for a
+string in the returned output
+
 '''
 import sys
 import pexpect
@@ -23,6 +26,8 @@ required.add_argument('-l', type=str, help="login to ssh on host", required=True
 required.add_argument('-p', type=str, help="password to ssh", required=True, dest="password")
 required.add_argument('-c', type=str, help="command to execute", required=True, dest="command")
 
+required.add_argument('-s', type=str, help="string to expect", required=False, dest="string")
+
 args = parser.parse_args()
 
 try:
@@ -31,15 +36,26 @@ try:
         i = child.expect(['assword:'])
         child.sendline(args.password)
     except pexpect.EOF:
-        ret =  "CRITICAL - unable to login to sshi at {0}".format(args.hostname)
+        ret =  "CRITICAL - unable to login to ssh at {0}".format(args.hostname)
         print ret
         sys.exit(2)
 
     i = child.expect([pexpect.EOF])
     if i == 0:
         ret = child.before.strip()
-        print ret
-        sys.exit(0)
+        if not args.string:
+            #print ret
+            print "OK connected by SSH"
+            sys.exit(0)
+        else:
+            if not args.string in ret:
+                print "CRITICAL - connected but expected output '" + args.string + "' not found"
+                #print ret
+                sys.exit(2)
+            else:
+                print "OK connected by SSH and found '" + args.string + "'"
+                #print ret
+                sys.exit(0)
     else:
         print "CRITICAL - unable to read output."
         sys.exit(2)
